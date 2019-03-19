@@ -4,10 +4,9 @@
 Python YouTube API
 ========================
 
-Developed by: Chirag Rathod (Srce Cde)
-Email: chiragr83@gmail.com
+Forked from: Chirag Rathod
+https://github.com/srcecde/python-youtube-api/blob/master/youtube_api_cmd.py
 
-========================
 """
 import pickle
 import json
@@ -27,7 +26,9 @@ YOUTUBE_SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search'
 
 
 class YouTubeApi():
-    self.all_comments = []
+
+    def __init__(self):
+        self.all_comments = []
 
     def load_comments(self, mat):
         comments = []
@@ -51,27 +52,6 @@ class YouTubeApi():
         all_coments = []
         mxRes = 20
         vid = str()
-        # parser.add_argument("--c", help="calls comment function by keyword function", action='store_true')
-        # parser.add_argument("--max", help="number of comments to return")
-        # parser.add_argument("--videourl", help="Required URL for which comments to return")
-        # parser.add_argument("--key", help="Required API key")
-
-        # args = parser.parse_args()
-
-        # if not args.videourl:
-        #     exit("Please specify video URL using the --videourl=parameter.")
-        #
-        # if not args.key:
-        #     exit("Please specify API key using the --key=parameter.")
-
-        # try:
-        #     video_id = urlparse(str(video_url))
-        #     print(video_id)
-        #     q = parse_qs(video_id.query)
-        #     vid = q["v"][0]
-        #
-        # except:
-        #     print("Invalid YouTube URL")
 
         parms = {
                     'part': 'snippet,replies',
@@ -102,7 +82,7 @@ class YouTubeApi():
                 self.all_comments.append(self.load_comments(mat))
 
                 i += 1
-                if i > 15:
+                if i > 3:
                     break
         except KeyboardInterrupt:
             print("User Aborted the Operation")
