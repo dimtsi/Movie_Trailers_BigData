@@ -18,6 +18,8 @@ from urllib.request import  urlopen
 import json
 import pandas as pd
 
+from nltk.sentiment.vader import SentimentIntensityAnalyzer as sid
+
 
 API_KEY = 'AIzaSyC9NdNT6f13uX6zoU_auHy9uXdKqtPqz0w'
 YOUTUBE_COMMENT_URL = 'https://www.googleapis.com/youtube/v3/commentThreads'
@@ -48,13 +50,22 @@ class YouTubeApi():
                     rauthor = reply['snippet']['authorDisplayName']
                     rtext = reply["snippet"]["textDisplay"]
                     # comment_data = {}
-                    self.all_comments.append(self.get_single_comment_info(reply))
+                    info = self.get_single_comment_info(reply)
+                    self.all_comments.append(info)
                     # self.all_comments.append(reply)
 
         # return comments
 
                 # print("\n\tReply by {}: {}".format(rauthor, rtext), "\n")
-
+    # def get_statistics_views(self, video_id, key = API_KEY):
+    #     response = youtube.videos().list(
+    #     part='statistics, snippet',
+    #     id=video_id).execute()
+    #
+    #     view_count = response['items'][0]['statistics']['viewCount']
+    #     like_count = response['items'][0]['statistics']['likeCount']
+    #     dislike_count = response['items'][0]['statistics']['dislikeCount']
+    #     return view_count,like_count,dislike_count
 
     def get_video_comment(self, video_url, max_results = 100, key = API_KEY):
         # parser = argparse.ArgumentParser()
@@ -78,7 +89,10 @@ class YouTubeApi():
             nextPageToken = mat.get("nextPageToken")
             # print("\nPage : 1")
             # print("------------------------------------------------------------------")
-            self.all_comments.append(self.load_comments(mat))
+            info = self.load_comments(mat)
+            if info is not None:
+                self.all_comments.append(info)
+            # self.all_comments.append()
 
             while nextPageToken:
                 parms.update({'pageToken': nextPageToken})
@@ -87,11 +101,11 @@ class YouTubeApi():
                 nextPageToken = mat.get("nextPageToken")
                 # print("\nPage : ", i)
                 # print("------------------------------------------------------------------")
-
-                self.all_comments.append(self.load_comments(mat))
-
+                comments = self.load_comments(mat)
+                if comments is not None:
+                    self.all_comments.append(comments)
                 i += 1
-                if i > 1:
+                if i > 1: #comment_page_limit
                     break
         except KeyboardInterrupt:
             print("User Aborted the Operation")
@@ -115,11 +129,13 @@ def extract_comments():
     video_ids = ['8hP9D6kZseM', '6ZfuNTqbHE8', 'GokKUqLcvD8']
     for video_id in video_ids:
         comments = y.get_video_comment(video_id)
-        data.append({video_id: comments})
+        data.append(comments)
     # jsonData=json.dumps(data)
     # with open('data.json', 'a') as outfile:
     #     json.dump(data, outfile)
     return data
+
+def perform_sentiment_analysis(*)
 # def obtain_info_single_comment(comment):
 
 
@@ -133,17 +149,19 @@ if __name__ == '__main__':
     import numpy as np
     cwd = '/home/dimtsi/Dropbox/UvA/2nd Semester/Big Data/Project/src'
     os.chdir(cwd)
-    # comms = main()
-    # !rm data.json
+
     data = extract_comments()
-    # data
+    dfs = [pd.DataFrame(data[x]) for x in range(len(data))]
+    df = pd.concat(dfs)
+    df.columns
     # with open(r"data.json", "r") as read_file:
     #     data = json.load(read_file)
     # pd.DataFrame.from_dict(data[0].values()['snippet'])
-
-
-# data[0].values()
-data[2]
+    from nltk.sentiment.vader import SentimentIntensityAnalyzer as sid
+    sid = sid()
+    df['sentiment_score'] = df['text'].map(
+                lambda comm:sid.polarity_scores(comm)['compound'])
+    df.head(50)
     # data.keys()
     # with open('all_the_stuff.pkl', 'rb') as pickle_file:
     #     all_comms = pickle.load(pickle_file)
