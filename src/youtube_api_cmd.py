@@ -26,9 +26,13 @@ YOUTUBE_SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search'
 
 
 class YouTubeApi():
+    all_comments = []
 
-    def __init__(self):
-        self.all_comments = []
+    def get_single_comment_info(self, comment):
+        text = comment["snippet"]["textDisplay"]
+        likeCount = comment["snippet"]["likeCount"]
+        date = comment["snippet"]["publishedAt"]
+        return {'text' : text, 'likeCount': likeCount, 'date' : date}
 
     def load_comments(self, mat):
         comments = []
@@ -36,16 +40,21 @@ class YouTubeApi():
             comment = item["snippet"]["topLevelComment"]
             author = comment["snippet"]["authorDisplayName"]
             text = comment["snippet"]["textDisplay"]
-            self.all_comments.append(comment)
+            self.all_comments.append(self.get_single_comment_info(comment))
+            # self.all_comments.append(comment)
             # print("Comment by {}: {}".format(author, text))
             if 'replies' in item.keys():
                 for reply in item['replies']['comments']:
                     rauthor = reply['snippet']['authorDisplayName']
                     rtext = reply["snippet"]["textDisplay"]
-                    self.all_comments.append(reply)
+                    # comment_data = {}
+                    self.all_comments.append(self.get_single_comment_info(reply))
+                    # self.all_comments.append(reply)
+
         # return comments
 
                 # print("\n\tReply by {}: {}".format(rauthor, rtext), "\n")
+
 
     def get_video_comment(self, video_url, max_results = 100, key = API_KEY):
         # parser = argparse.ArgumentParser()
@@ -67,8 +76,8 @@ class YouTubeApi():
             i = 2
             mat = json.loads(matches)
             nextPageToken = mat.get("nextPageToken")
-            print("\nPage : 1")
-            print("------------------------------------------------------------------")
+            # print("\nPage : 1")
+            # print("------------------------------------------------------------------")
             self.all_comments.append(self.load_comments(mat))
 
             while nextPageToken:
@@ -76,13 +85,13 @@ class YouTubeApi():
                 matches = self.openURL(YOUTUBE_COMMENT_URL, parms)
                 mat = json.loads(matches)
                 nextPageToken = mat.get("nextPageToken")
-                print("\nPage : ", i)
-                print("------------------------------------------------------------------")
+                # print("\nPage : ", i)
+                # print("------------------------------------------------------------------")
 
                 self.all_comments.append(self.load_comments(mat))
 
                 i += 1
-                if i > 3:
+                if i > 1:
                     break
         except KeyboardInterrupt:
             print("User Aborted the Operation")
@@ -100,13 +109,19 @@ class YouTubeApi():
             return matches
 
 
-def main():
+def extract_comments():
+    data = []
     y = YouTubeApi()
     video_ids = ['8hP9D6kZseM', '6ZfuNTqbHE8', 'GokKUqLcvD8']
     for video_id in video_ids:
         comments = y.get_video_comment(video_id)
-        with open('data.json', 'a') as outfile:
-            json.dump({video_id: comments}, outfile)
+        data.append({video_id: comments})
+    # jsonData=json.dumps(data)
+    # with open('data.json', 'a') as outfile:
+    #     json.dump(data, outfile)
+    return data
+# def obtain_info_single_comment(comment):
+
 
     # video_data = pd.read_csv('movies.csv')
     # video_data
@@ -118,11 +133,18 @@ if __name__ == '__main__':
     import numpy as np
     cwd = '/home/dimtsi/Dropbox/UvA/2nd Semester/Big Data/Project/src'
     os.chdir(cwd)
-    main()
-    # video_data.head()
+    # comms = main()
+    # !rm data.json
+    data = extract_comments()
+    # data
+    # with open(r"data.json", "r") as read_file:
+    #     data = json.load(read_file)
+    # pd.DataFrame.from_dict(data[0].values()['snippet'])
 
 
-
+# data[0].values()
+data[2]
+    # data.keys()
     # with open('all_the_stuff.pkl', 'rb') as pickle_file:
     #     all_comms = pickle.load(pickle_file)
     # df = pd.DataFrame(all_comms)
